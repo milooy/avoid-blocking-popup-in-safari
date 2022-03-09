@@ -7,23 +7,52 @@
     <title>Document</title>
   </head>
   <body>
-    <button id="popUp">시작하기</button>
-    <script>
-      document.getElementById("popUp").addEventListener("click", () => {
-        var url = new URL(
-          "https://auth-alpha.cert.toss.im/start?serviceType=SIGN_USER_AUTH"
-        );
-        url.searchParams.append(
-          "domain",
-          location.protocol + "//" + location.host
-        );
+    <button id="popUpUnsafe1">팝업 열기 (차단 O - 비동기 안에 팝업열기)</button>
+    <button id="popUpUnsafe2">팝업 열기 (차단 O - 비동기 이후 팝업열기)</button>
+    <button id="popUpSafe">팝업 열기 (차단 X - 팝업 열고 비동기처리)</button>
 
+    <p>사파리는 비동기 콜 안에서 window.open으로 연 팝업을 차단합니다.</p>
+    <p>1.빈 팝업을 열고 2.필요한 비동기콜을 한 후 3.팝업 url을 바꿔주세요.</p>
+    <p>2와 1이 바뀌어도 차단되는걸 유념해주세요.</p>
+
+    <script>
+      const fetchCat = async (text) => {
+        const OPEN_API_DOMAIN = "https://cataas.com";
+        const response = await fetch(
+          `${OPEN_API_DOMAIN}/cat/says/${text}?json=true`
+        );
+        const responseJson = await response.json();
+        return `${OPEN_API_DOMAIN}/${responseJson.url}`;
+      };
+
+      document.getElementById("popUpUnsafe1").addEventListener("click", () => {
+        fetchCat("야옹").then((url) => {
+          var popup = window.open(
+            undefined,
+            "cert",
+            "top=10, left=10, width=500, height=600, status=no, menubar=no, toolbar=no, resizable=no"
+          );
+          popup.location.href = url;
+        });
+      });
+
+      document.getElementById("popUpUnsafe2").addEventListener("click", async () => {
+        const url = await fetchCat("야옹");
         var popup = window.open(
           undefined,
           "cert",
           "top=10, left=10, width=500, height=600, status=no, menubar=no, toolbar=no, resizable=no"
         );
-        // popup.location.href = "/user-auth-popup";
+        popup.location.href = url;
+      });
+
+      document.getElementById("popUpSafe").addEventListener("click", async () => {
+        var popup = window.open(
+          undefined,
+          "cert",
+          "top=10, left=10, width=500, height=600, status=no, menubar=no, toolbar=no, resizable=no"
+        );
+        const url = await fetchCat("야옹");
         popup.location.href = url;
       });
     </script>
