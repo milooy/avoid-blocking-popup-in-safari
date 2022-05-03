@@ -25,9 +25,9 @@
                 var popupOption = 'top=10, left=10, width=540, height=680, status=no, menubar=no, toolbar=no, resizable=no';
                 var isIE = /*@cc_on!@*/ false || !!document.documentMode;
                 var popupInitialEmptyUrl = isIE ? this._TOSS_POPUP_BASE_URL + '/loading' : undefined; // NOTE: IE는 undefined 팝업을 열지 못합니다.
-                if (this._popup !== null) {
-                    this._popup.close(); // NOTE: 이미 팝업이 열려있다면 닫고 다시 띄웁니다 (모바일에선 팝업을 n번 띄울 때 포커싱이 안되는 현상 때문)
-                }
+                // if (this._popup !== null) {
+                //     this._popup.close(); // NOTE: 이미 팝업이 열려있다면 닫고 다시 띄웁니다 (모바일에선 팝업을 n번 띄울 때 포커싱이 안되는 현상 때문)
+                // }
                 this._popup = window.open(popupInitialEmptyUrl, '토스로 인증하기', popupOption);
             },
             /**
