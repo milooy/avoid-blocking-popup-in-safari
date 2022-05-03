@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div styles="padding: 40px">
+      <h1>인증 표준창 데모</h1>
+      <h2>로그인</h2>
+      <button class="startTossAuth">토스로 시작하기</button>
+      <button class="test1">토스인증서 띄우기</button>
+      <button class="test2">네이버 띄우기</button>
+      <button class="startTossAuthForPC">토스로 시작하기: PC에서 원클릭 테스트용</button>
+    </div>
+    <script language="JavaScript" type="text/JavaScript">
+        var val_txId = '3671e8cf-d070-402b-b70e-39afcb0278ad';
+        var val_authUrl = 'https://auth.cert.toss.im/start?serviceType=SIGN_USER_AUTH';
+        var returnUrl = 'https://ncert-cyspey.geto.co.kr/identity/toss_step02.php';
+        var TossAuth = {
+            _popup: null,
+            _TOSS_POPUP_BASE_URL: 'https://auth.cert.toss.im',
+
+            /**
+             * 팝업 차단 방지를 위해 비동기 호출 전에 빈 팝업을 엽니다.
+             */
+            preparePopup: function () {
+                var popupOption = 'top=10, left=10, width=540, height=680, status=no, menubar=no, toolbar=no, resizable=no';
+                var isIE = /*@cc_on!@*/ false || !!document.documentMode;
+                var popupInitialEmptyUrl = isIE ? this._TOSS_POPUP_BASE_URL + '/loading' : undefined; // NOTE: IE는 undefined 팝업을 열지 못합니다.
+                if (this._popup !== null) {
+                    this._popup.close(); // NOTE: 이미 팝업이 열려있다면 닫고 다시 띄웁니다 (모바일에선 팝업을 n번 띄울 때 포커싱이 안되는 현상 때문)
+                }
+                this._popup = window.open(popupInitialEmptyUrl, '토스로 인증하기', popupOption);
+            },
+            /**
+             * 미리 열어두었던 팝업을 인증페이지로 전환하고, 이벤트 핸들러를 등록합니다.
+             */
+            start: function (params) {
+                const popup = this._popup;
+                function postTxIdToPopup(originalUrl, name, txId) {
+                    var url = originalUrl;
+                    var form = document.createElement('form');
+                    form.setAttribute('method', 'post');
+                    form.setAttribute('action', url);
+                    form.setAttribute('target', name);
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'txId';
+                    input.value = txId;
+                    form.appendChild(input);
+
+                    document.body.appendChild(form);
+                    popup.location.href = url;
+                    form.submit();
+                    document.body.removeChild(form);
+                }
+
+                function addPopupEvent(param) {
+                var handleMessage = function (event) {
+                    var resetHandlers = function () {
+                        window.removeEventListener('message', handleMessage);
+                    };
+                    var eventType = event.data.type;
+                    switch (eventType) {
+                        case 'TOSS_AUTH_SUCCESS':
+                            if (param.onSuccess !== undefined) {
+                                param.onSuccess();
+                            } else {
+                                console.error('TossAuth.start에 onSuccess를 정의해주세요');
+                            }
+                            resetHandlers();
+                            break;
+                        case 'TOSS_AUTH_FAIL':
+                            if (param.onFail !== undefined) {
+                                param.onFail(event.data.error);
+                            }
+                            resetHandlers();
+                            break;
+                        default:
+                            break;
+                    }
+                };
+                window.addEventListener('message', handleMessage, false);
+            }
+                var authUrlWithDomain = params.authUrl + '&domain=' + location.origin;
+                postTxIdToPopup(authUrlWithDomain, '토스로 인증하기', params.txId);
+                addPopupEvent(params);
+            },
+        };
+
+        function openTossAuthPopup() {
+            TossAuth.preparePopup(); // NOTE: 팝업차단 방지를 위해 빈 팝업을 먼저 엽니다
+            TossAuth.start({
+                authUrl: val_authUrl,
+                txId: val_txId,
+                onSuccess: function () {
+                    location.href = returnUrl;
+                },
+                onFail: function (error) {
+                    console.error('에러가 발생했습니다', error);
+                },
+            });
+        };
+
+      //   $(document).ready(function(){openTossAuthPopup();});
+      document.querySelector('.startTossAuth').addEventListener('click', function () {
+          openTossAuthPopup(false);
+        });
+      document.querySelector('.test1').addEventListener('click', function () {
+        // window.open('https://toss.im/tosscert', '토스로 인증하기', 'top=10, left=10, width=540, height=680, status=no, menubar=no, toolbar=no, resizable=no')
+        window.open('https://auth.cert.toss.im/error', '토스로 인증하기', 'top=10, left=10, width=540, height=680, status=no, menubar=no, toolbar=no, resizable=no')
+        });
+      document.querySelector('.test2').addEventListener('click', function () {
+        window.open('https://www.naver.com/', '토스로 인증하기', 'top=10, left=10, width=540, height=680, status=no, menubar=no, toolbar=no, resizable=no')
+        });
+    </script>
+  </head>
+  <body topmargin="0" leftmargin="0" style="overflow: hidden"></body>
+</html>
